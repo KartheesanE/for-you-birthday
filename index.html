@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Happy Birthday 🎂</title>
+<style>
+  :root {
+    --pink:  #ff5e94;
+    --purple:#8b5cf6;
+    --gold:  #ffd166;
+    --cream: #fff7fb;
+    --ink:   #3a2b3f;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    background: linear-gradient(160deg, #ffe1ec 0%, #ffe9f5 35%, #efe4ff 100%);
+    user-select: none;
+  }
+
+  /* Full-screen particle canvas sits above everything, never eats taps */
+  #fx {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 50;
+  }
+
+  /* Whole-screen tap surface */
+  #stage {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .scene { display: none; width: 100%; max-width: 560px; }
+  .scene.active { display: block; animation: sceneIn .6s ease both; }
+
+  @keyframes sceneIn {
+    from { opacity: 0; transform: translateY(18px) scale(.98); }
+    to   { opacity: 1; transform: translateY(0)    scale(1);   }
+  }
+
+  /* ---------- Opening ---------- */
+  .hi-name {
+    font-size: clamp(2.2rem, 9vw, 4rem);
+    font-weight: 800;
+    margin: 0 0 .2em;
+    background: linear-gradient(90deg, var(--pink), var(--purple));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    line-height: 1.05;
+  }
+  .subtitle { font-size: clamp(1rem, 4vw, 1.35rem); opacity: .8; margin: 0 0 1em; }
+
+  .opening-note {
+    max-width: 440px;
+    margin: 0 auto 1.6em;
+    font-size: clamp(.95rem, 3.8vw, 1.15rem);
+    line-height: 1.45;
+    font-style: italic;
+    opacity: .82;
+    background: rgba(255,255,255,.55);
+    padding: .9em 1.1em;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(139,92,246,.12);
+  }
+
+  .tap-pill {
+    display: inline-block;
+    padding: .8em 1.8em;
+    border-radius: 999px;
+    font-size: clamp(1rem, 4.5vw, 1.3rem);
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(90deg, var(--pink), var(--purple));
+    box-shadow: 0 10px 30px rgba(255,94,148,.45);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { transform: scale(1);    box-shadow: 0 10px 30px rgba(255,94,148,.45); }
+    50%     { transform: scale(1.06); box-shadow: 0 16px 40px rgba(139,92,246,.5); }
+  }
+
+  /* ---------- Photo card ---------- */
+  .card {
+    background: #fff;
+    padding: 16px 16px 8px;
+    border-radius: 14px;
+    box-shadow: 0 18px 50px rgba(90,40,90,.28);
+    transform: rotate(-1.5deg);
+    display: inline-block;
+    max-width: 100%;
+    animation: popIn .55s cubic-bezier(.2,.9,.3,1.3) both;
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: rotate(-1.5deg) scale(.7); }
+    to   { opacity: 1; transform: rotate(-1.5deg) scale(1);  }
+  }
+  .card .frame {
+    width: min(78vw, 420px);
+    height: min(78vw, 420px);
+    border-radius: 8px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #ffd1e3, #d9c7ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card .frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card .frame .placeholder {
+    font-size: clamp(3rem, 14vw, 5rem);
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,.12));
+  }
+
+  .quote {
+    margin: .9em auto 0;
+    max-width: 460px;
+    font-size: clamp(1.05rem, 4.6vw, 1.5rem);
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--ink);
+    min-height: 2.2em;
+    animation: sceneIn .6s ease .15s both;
+  }
+
+  .dots { margin-top: 1.2em; display: flex; gap: 8px; justify-content: center; }
+  .dots span {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: rgba(139,92,246,.28);
+    transition: transform .3s, background .3s;
+  }
+  .dots span.on { background: var(--pink); transform: scale(1.35); }
+
+  .hint {
+    margin-top: 1.1em;
+    font-size: .95rem;
+    opacity: .6;
+    animation: fade 1.8s ease-in-out infinite;
+  }
+  @keyframes fade { 0%,100%{opacity:.35} 50%{opacity:.8} }
+
+  /* ---------- Heartfelt pause ---------- */
+  .wish-emoji {
+    font-size: clamp(2.6rem, 12vw, 4rem);
+    margin-bottom: .3em;
+    animation: sway 3s ease-in-out infinite;
+  }
+  @keyframes sway { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-8px) rotate(3deg)} }
+  .wish-msg {
+    max-width: 500px;
+    margin: 0 auto 1.4em;
+    font-size: clamp(1.05rem, 4.4vw, 1.45rem);
+    line-height: 1.55;
+    font-weight: 600;
+    color: var(--ink);
+    animation: sceneIn .8s ease .1s both;
+  }
+
+  /* ---------- Finale ---------- */
+  .final-title {
+    font-size: clamp(2rem, 9.5vw, 4.4rem);
+    font-weight: 900;
+    line-height: 1.05;
+    margin: 0 0 .25em;
+    background: linear-gradient(90deg, var(--pink), var(--gold), var(--purple));
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shine 4s linear infinite, popIn .7s cubic-bezier(.2,.9,.3,1.4) both;
+  }
+  @keyframes shine { to { background-position: 200% center; } }
+  .final-msg {
+    font-size: clamp(1.05rem, 4.6vw, 1.5rem);
+    line-height: 1.5;
+    max-width: 480px;
+    margin: 0 auto 1.4em;
+    opacity: .9;
+  }
+  .replay, .gift-open, .process-btn {
+    display: inline-block;
+    padding: .7em 1.6em;
+    border: none;
+    border-radius: 999px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--purple);
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(139,92,246,.3);
+    cursor: pointer;
+    margin-top: .4em;
+  }
+  .replay:active, .gift-open:active, .process-btn:active { transform: scale(.96); }
+  .gift-open, .process-btn {
+    animation: pulse 1.8s ease-in-out infinite; color: #fff;
+    background: linear-gradient(90deg, var(--pink), var(--purple));
+  }
+  .process-btn:disabled { opacity: .6; animation: none; cursor: default; }
+
+  /* ---------- Gift picker ---------- */
+  .gift-title {
+    font-size: clamp(1.6rem, 7vw, 2.6rem);
+    font-weight: 800;
+    margin: 0 0 .3em;
+    background: linear-gradient(90deg, var(--pink), var(--purple));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .gift-intro {
+    max-width: 480px; margin: 0 auto 1.3em;
+    font-size: clamp(1rem, 4vw, 1.25rem); line-height: 1.5; opacity: .9;
+  }
+  .gift-list { display: flex; flex-direction: column; gap: 12px; max-width: 440px; margin: 0 auto; }
+  .gift-card {
+    display: flex; align-items: center; gap: 14px;
+    text-align: left;
+    padding: 14px 18px;
+    border: 2px solid rgba(139,92,246,.25);
+    border-radius: 16px;
+    background: rgba(255,255,255,.8);
+    font-size: clamp(1rem, 4vw, 1.2rem);
+    font-weight: 600; color: var(--ink);
+    cursor: pointer;
+    transition: transform .18s, box-shadow .18s, border-color .18s, background .18s;
+  }
+  .gift-card .g-emoji { font-size: 1.8rem; flex: 0 0 auto; }
+  .gift-card:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(139,92,246,.22); }
+  .gift-card:active { transform: scale(.98); }
+  .gift-card.chosen {
+    border-color: var(--pink);
+    background: linear-gradient(90deg, rgba(255,94,148,.15), rgba(139,92,246,.15));
+    box-shadow: 0 12px 30px rgba(255,94,148,.3);
+  }
+  .gift-card.dimmed { opacity: .45; }
+  .gift-confirm {
+    max-width: 460px; margin: 1.3em auto .4em;
+    font-size: clamp(1.02rem, 4.2vw, 1.35rem); line-height: 1.5;
+    font-weight: 600; color: var(--ink);
+    min-height: 1em;
+    animation: sceneIn .6s ease both;
+  }
+  .gift-status {
+    font-size: clamp(1rem, 4vw, 1.2rem);
+    font-weight: 700;
+    margin: .4em auto 1em;
+    min-height: 1em;
+    color: #12b76a;
+  }
+  .gift-status.sending { color: var(--purple); font-weight: 600; }
+
+  /* Music toggle */
+  #music-btn {
+    position: fixed;
+    top: 14px; right: 14px;
+    z-index: 60;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,.75);
+    box-shadow: 0 4px 14px rgba(0,0,0,.15);
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: none;
+  }
+
+  .loading { font-size: 1.2rem; opacity: .7; }
+</style>
+</head>
+<body>
+  <canvas id="fx"></canvas>
+  <button id="music-btn" title="Toggle music">🔊</button>
+
+  <div id="stage">
+    <!-- Opening -->
+    <section class="scene active" id="scene-open">
+      <h1 class="hi-name" id="open-name">Happy Birthday!</h1>
+      <p class="subtitle">Something special, just for you 💖</p>
+      <p class="opening-note" id="opening-note"></p>
+      <span class="tap-pill">Tap to begin 🎉</span>
+    </section>
+
+    <!-- Photo journey -->
+    <section class="scene" id="scene-photo">
+      <div class="card">
+        <div class="frame" id="photo-frame"></div>
+      </div>
+      <p class="quote" id="photo-quote"></p>
+      <div class="dots" id="dots"></div>
+      <p class="hint" id="hint">tap for more →</p>
+    </section>
+
+    <!-- Heartfelt pause: wishing I could be there in person -->
+    <section class="scene" id="scene-wish">
+      <div class="wish-emoji">🥺🤍</div>
+      <p class="wish-msg" id="wish-msg"></p>
+      <p class="hint">tap to continue →</p>
+    </section>
+
+    <!-- Finale -->
+    <section class="scene" id="scene-final">
+      <h1 class="final-title" id="final-title">Happy Birthday! 🎂</h1>
+      <p class="final-msg" id="final-msg"></p>
+      <button class="gift-open" id="gift-open">One last thing… 🎁</button>
+    </section>
+
+    <!-- Gift picker -->
+    <section class="scene" id="scene-gift">
+      <h2 class="gift-title">Pick your birthday gift 🎁</h2>
+      <p class="gift-intro" id="gift-intro"></p>
+      <div class="gift-list" id="gift-list"></div>
+      <p class="gift-confirm" id="gift-confirm"></p>
+      <button class="process-btn" id="gift-send" style="display:none">Send my gift to him 🎁</button>
+      <p class="gift-status" id="gift-status"></p>
+      <button class="replay" id="replay" style="display:none">Replay 💖</button>
+    </section>
+  </div>
+
+<script>
+/* ============================================================
+   ✏️  EDIT ME — everything you'd want to change is right here
+   ============================================================ */
+const CONFIG = {
+  // Her name — shown on the opening and in the final wish.
+  name: "Uma",
+
+  // The little (self-aware, teasing) line on the opening screen —
+  // owning up to reusing the same webpage idea from Valentine's Day.
+  openingNote:
+    "Okay, okay… yes, it's the same webpage trick as Valentine's. 🙈 " +
+    "Forgive me for the rerun — turns out my heart is a hopeless repeat offender. " +
+    "But some feelings are worth saying twice. 💗",
+
+  // The heartfelt, aching pause shown AFTER the last photo,
+  // right before the birthday blast.
+  inPersonWish:
+    "I wanted to be there, Papa💕. To wish you your first birthday since I came " +
+    "into your life while looking right into your eyes — holding your hands, " +
+    "watching you smile. That's all I dreamed of. And it breaks me a little that " +
+    "I can't be there the way I wish I could. But wherever you are, know this — " +
+    "my whole heart is with you today. 🥺💗",
+
+  // Where the photos live. "" = same folder as this file.
+  // Use "photos/" if you keep them in a subfolder named "photos".
+  photoDir: "",
+
+  // The page looks for photo1, photo2, photo3 ... automatically and
+  // stops at the first number it can't find. Just drop your images in
+  // the folder named photo1.jpg, photo2.jpg, photo3.jpg, and so on.
+  extensions: ["jpg", "jpeg", "png", "webp", "gif"],
+
+  // One quote per photo, in order. If you have more photos than quotes,
+  // the extra photos borrow lines from fallbackQuotes below — so every
+  // photo always has something sweet under it.
+  quotes: [
+    "We've met just once, Papa💕 — yet somehow we became close. Miles apart, but my heart never left your side. 🏡💗",
+    "Every 'helloooo', every good day and bad — I've loved living them all with you. And I'd choose you all over again. 📞💫",
+    "Your voice is my favorite sound — the softest place my heart runs home to. 🎧💗",
+    "I'm your comfort, your best friend, and the one who loves you more than words can hold. Being that for you is the best part of me. 🤍",
+    "Through your highest highs and your hardest lows, I'm right here. Hold my hand across the distance — I've got you, always. 🌷",
+    "You never have to ask me twice. For you, my heart only knows one answer — yes, always yes. 💕",
+    "Every promise I've made to you, I intend to keep. You are the one vow I'll never break. 🤝💖",
+  ],
+
+  // Used to fill in captions if there are more photos than quotes above.
+  fallbackQuotes: [
+    "I fell for your heart long before I ever got to hold your hand. 💫",
+    "On your heaviest days, remember this — you were never, ever carrying it alone. 🤍",
+    "My best friend, my comfort, and the love I never saw coming but can't imagine living without. 💞",
+    "However far the miles stretch, my heart is only ever one call away. 📱💕",
+  ],
+
+  // The big finale.
+  finalTitle: "Happy Birthday, {name}! 🎂",
+  finalMessage:
+    "We've met in person just once — but through every call and every " +
+    "message, we've shared a whole world together: the laughter, the tears, the " +
+    "everything. Thank you for trusting me to be your comfort, your best friend, " +
+    "and the one who loves you most. I'll keep saying " +
+    "yes, and I'll keep showing up for you — through every good day and every " +
+    "hard one. Here's to you, to your beautiful heart, and to the day we finally " +
+    "close this distance. Happy birthday, Papa💕. I'm yours, always. Karthee❤️‍🔥",
+
+  // ---- The final gift picker (a callback to Valentine's Day) ----
+  // Intro line above the gift choices.
+  giftIntro:
+    "Last Valentine's, you chose an adventure trip with me — and I haven't " +
+    "forgotten for a second. It's still waiting for us, I promise. 💫 " +
+    "So now, my love… pick your birthday gift:",
+
+  // The gifts she can tap. First three are her wishes; the last is my surprise for her.
+  gifts: [
+    { emoji: "💇‍♀️", label: "A Dyson hair styling tool" },
+    { emoji: "💍", label: "A gold ring" },
+    { emoji: "🚗", label: "A long drive — just you and me" },
+    { emoji: "💎", label: "Let me surprise you — a diamond ring, chain or earrings" },
+  ],
+
+  // Shown after she taps a gift. {gift} is replaced with her choice.
+  giftConfirm:
+    "You chose {gift} 💖 — consider it already yours. And that adventure trip? " +
+    "Still on. I'm keeping every single promise I make to you. 😉💗",
+
+  // ---- Get her choice sent to YOUR email, automatically ----
+  notify: {
+    // ---------- EMAIL (silent, automatic) ----------
+    toEmail: "kartheesan468@gmail.com",
+    // Paste your FREE Web3Forms access key to enable silent auto-email:
+    //   1. Go to https://web3forms.com  ->  "Create Access Key"
+    //   2. Enter kartheesan468@gmail.com, check your inbox, copy the key.
+    //   3. Paste it between the quotes below.
+    web3formsKey: "75711b50-66d0-4341-b882-f557e7ee1e00",
+
+    // ---------- WHATSAPP (WhatsApp's official Click-to-Chat API) ----------
+    // Your number in FULL international form, no "+" or spaces.
+    //   India (+91) + 8220062151  =>  "918220062151".
+    // When she taps "Send my gift", WhatsApp opens with the message already
+    // typed to this number — she just presses Send. No key, no third party.
+    whatsapp: "918220062151",
+  },
+
+  // OPTIONAL background music. Put a file (e.g. song.mp3) next to this
+  // page and write its name here. Leave "" for no music.
+  music: "",
+};
+/* ============================================================
+   End of edit zone — the magic below usually needs no changes.
+   ============================================================ */
+
+/* ---------- State ---------- */
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let photos = [];        // list of {src} or {placeholder:true}
+let idx = -1;           // current photo index
+let selectedGift = -1;  // which gift she has tapped (before sending)
+let stageEl, scenes, audio = null;
+
+/* ---------- Boot ---------- */
+window.addEventListener("DOMContentLoaded", init);
+
+async function init() {
+  stageEl = document.getElementById("stage");
+  scenes = {
+    open:  document.getElementById("scene-open"),
+    photo: document.getElementById("scene-photo"),
+    wish:  document.getElementById("scene-wish"),
+    final: document.getElementById("scene-final"),
+    gift:  document.getElementById("scene-gift"),
+  };
+
+  document.getElementById("open-name").textContent = "Happy Birthday, " + CONFIG.name + "!";
+  document.getElementById("opening-note").textContent = CONFIG.openingNote;
+  document.getElementById("wish-msg").textContent = CONFIG.inPersonWish;
+  document.getElementById("gift-intro").textContent = CONFIG.giftIntro;
+  buildGifts();
+  document.getElementById("final-title").textContent =
+    CONFIG.finalTitle.replace("{name}", CONFIG.name);
+  document.getElementById("final-msg").textContent = CONFIG.finalMessage;
+
+  setupCanvas();
+  setupMusic();
+
+  // Poppers greet her the moment the page opens.
+  fireCannon(0.15, 1);       // bottom-left
+  fireCannon(0.85, -1);      // bottom-right
+
+  // Tap / click / key anywhere advances the story.
+  stageEl.addEventListener("click", advance);
+  window.addEventListener("keydown", (e) => {
+    if (e.key === " " || e.key === "Enter" || e.key === "ArrowRight") { e.preventDefault(); advance(); }
+  });
+  document.getElementById("replay").addEventListener("click", (e) => {
+    e.stopPropagation();
+    restart();
+  });
+  document.getElementById("gift-open").addEventListener("click", (e) => {
+    e.stopPropagation();
+    resetGifts();
+    showScene("gift");
+    burst(0.5, 0.2);
+  });
+  document.getElementById("gift-send").addEventListener("click", (e) => {
+    e.stopPropagation();
+    processGift();
+  });
+
+  // Discover photos in the background while she reads the opening screen.
+  photos = await discoverPhotos();
+}
+
+/* ---------- Photo auto-detection ---------- */
+async function discoverPhotos() {
+  const found = [];
+  const MAX = 60;          // safety cap
+  for (let n = 1; n <= MAX; n++) {
+    const src = await findExisting(n);
+    if (!src) break;       // first missing number ends the sequence
+    found.push({ src });
+  }
+  if (found.length === 0) {
+    // No real photos yet — build placeholders so the whole thing still runs.
+    const count = Math.max(CONFIG.quotes.length, 3);
+    for (let i = 0; i < count; i++) found.push({ placeholder: true });
+  }
+  return found;
+}
+
+// Try each extension for a given photo number; resolve to the first that loads.
+function findExisting(n) {
+  return new Promise((resolve) => {
+    let i = 0;
+    const tryNext = () => {
+      if (i >= CONFIG.extensions.length) return resolve(null);
+      const src = CONFIG.photoDir + "photo" + n + "." + CONFIG.extensions[i++];
+      const img = new Image();
+      img.onload = () => resolve(src);
+      img.onerror = tryNext;
+      img.src = src;
+    };
+    tryNext();
+  });
+}
+
+/* ---------- Flow ---------- */
+function advance() {
+  if (scenes.open.classList.contains("active")) {
+    startMusic();
+    fireCannon(0.15, 1);
+    fireCannon(0.85, -1);
+    showScene("photo");
+    nextPhoto();
+    return;
+  }
+  if (scenes.photo.classList.contains("active")) {
+    if (idx < photos.length - 1) {
+      nextPhoto();
+    } else {
+      // After the last photo, pause on the heartfelt in-person wish.
+      showScene("wish");
+    }
+    return;
+  }
+  // The heartfelt pause -> then the celebration blast.
+  if (scenes.wish.classList.contains("active")) {
+    showScene("final");
+    grandFinale();
+    return;
+  }
+  // On final scene, taps just re-trigger a little burst of joy.
+  if (scenes.final.classList.contains("active")) {
+    burst(Math.random(), Math.random() * 0.4);
+  }
+}
+
+function nextPhoto() {
+  idx++;
+  const p = photos[idx];
+  const frame = document.getElementById("photo-frame");
+  const emojis = ["📸","💝","🌸","🎈","⭐","🌈","🍰","💫"];
+
+  if (p.placeholder) {
+    frame.innerHTML = '<div class="placeholder">' + emojis[idx % emojis.length] + "</div>";
+  } else {
+    frame.innerHTML = "";
+    const img = new Image();
+    img.src = p.src;
+    frame.appendChild(img);
+  }
+
+  // Retrigger the pop animation each time.
+  const card = frame.closest(".card");
+  card.style.animation = "none";
+  void card.offsetWidth;
+  card.style.animation = "";
+
+  document.getElementById("photo-quote").textContent = quoteFor(idx);
+  renderDots();
+
+  document.getElementById("hint").textContent =
+    idx < photos.length - 1 ? "tap for more →" : "tap to continue →";
+
+  // A little confetti puff on every reveal.
+  burst(0.5, 0.35);
+}
+
+function quoteFor(i) {
+  if (i < CONFIG.quotes.length) return CONFIG.quotes[i];
+  const fb = CONFIG.fallbackQuotes;
+  return fb[(i - CONFIG.quotes.length) % fb.length];
+}
+
+function renderDots() {
+  const dots = document.getElementById("dots");
+  dots.innerHTML = "";
+  for (let i = 0; i < photos.length; i++) {
+    const s = document.createElement("span");
+    if (i <= idx) s.className = "on";
+    dots.appendChild(s);
+  }
+}
+
+function showScene(name) {
+  Object.values(scenes).forEach((s) => s.classList.remove("active"));
+  scenes[name].classList.add("active");
+}
+
+function restart() {
+  idx = -1;
+  resetGifts();
+  showScene("open");
+  fireCannon(0.15, 1);
+  fireCannon(0.85, -1);
+}
+
+/* ---------- Gift picker ---------- */
+function buildGifts() {
+  const list = document.getElementById("gift-list");
+  list.innerHTML = "";
+  CONFIG.gifts.forEach((g, i) => {
+    const card = document.createElement("button");
+    card.className = "gift-card";
+    card.innerHTML = '<span class="g-emoji">' + g.emoji + "</span><span>" + g.label + "</span>";
+    card.addEventListener("click", (e) => { e.stopPropagation(); chooseGift(i); });
+    list.appendChild(card);
+  });
+}
+
+function resetGifts() {
+  selectedGift = -1;
+  const cards = document.querySelectorAll(".gift-card");
+  cards.forEach((c) => { c.classList.remove("chosen", "dimmed"); c.disabled = false; });
+  document.getElementById("gift-confirm").textContent = "";
+  const sendBtn = document.getElementById("gift-send");
+  sendBtn.style.display = "none";
+  sendBtn.disabled = false;
+  const status = document.getElementById("gift-status");
+  status.textContent = "";
+  status.className = "gift-status";
+  document.getElementById("replay").style.display = "none";
+}
+
+// Step 1: she picks a gift (she can still change her mind until she sends).
+function chooseGift(i) {
+  selectedGift = i;
+  const cards = document.querySelectorAll(".gift-card");
+  cards.forEach((c, j) => {
+    c.classList.toggle("chosen", j === i);
+    c.classList.toggle("dimmed", j !== i);
+  });
+
+  const label = CONFIG.gifts[i].label;
+  document.getElementById("gift-confirm").textContent =
+    CONFIG.giftConfirm.replace("{gift}", '"' + label + '"');
+
+  // Reveal the send button; reset any earlier status.
+  document.getElementById("gift-send").style.display = "inline-block";
+  const status = document.getElementById("gift-status");
+  status.textContent = "";
+  status.className = "gift-status";
+  document.getElementById("replay").style.display = "none";
+
+  burst(0.5, 0.3);
+}
+
+// Step 2: she taps "Send my gift" -> deliver it, then confirm.
+function processGift() {
+  if (selectedGift < 0) return;
+  const label = CONFIG.gifts[selectedGift].label;
+
+  // Lock in the choice.
+  document.querySelectorAll(".gift-card").forEach((c) => { c.disabled = true; });
+  const sendBtn = document.getElementById("gift-send");
+  sendBtn.disabled = true;
+  sendBtn.style.display = "none";
+
+  // Deliver to email + WhatsApp.
+  sendChoice(label);
+
+  // Celebrate.
+  fireCannon(0.15, 1);
+  fireCannon(0.85, -1);
+  for (let k = 0; k < 3; k++) firework(0.25 + k * 0.25, 0.3 + Math.random() * 0.2);
+}
+
+// Silently delivers her choice to you — email (Web3Forms) + WhatsApp (CallMeBot).
+// No buttons: it just happens on tap, then reassures her it was sent.
+function sendChoice(label) {
+  const status = document.getElementById("gift-status");
+  status.className = "gift-status sending";
+  status.textContent = "Processing your gift… 💌";
+
+  const done = () => {
+    status.className = "gift-status";
+    status.textContent = "Your gift option has been processed and safely sent to me 💖 ✓";
+    document.getElementById("replay").style.display = "inline-block";
+  };
+
+  // Fire WhatsApp (fire-and-forget; can't read response due to CORS, that's fine).
+  sendWhatsApp(label);
+
+  // Fire email; when it settles, reassure her. Guarantee the message shows
+  // even if email isn't configured or the network is slow.
+  sendEmail(label).finally(done);
+  setTimeout(done, 4000); // safety net so she never waits on a spinner
+}
+
+function sendEmail(label) {
+  const key = (CONFIG.notify && CONFIG.notify.web3formsKey || "").trim();
+  if (!key) return Promise.resolve();
+  return fetch("https://api.web3forms.com/submit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+    body: JSON.stringify({
+      access_key: key,
+      subject: "🎁 " + CONFIG.name + " picked her birthday gift!",
+      from_name: CONFIG.name + "'s Birthday Page",
+      message: CONFIG.name + " chose: " + label,
+    }),
+  }).catch(() => {});
+}
+
+function sendWhatsApp(label) {
+  const phone = (CONFIG.notify && CONFIG.notify.whatsapp || "").trim();
+  if (!phone) return;
+  const text = "Hey ❤️ for my birthday, I choose: " + label + " 🎁💖";
+  const url = "https://wa.me/" + phone + "?text=" + encodeURIComponent(text);
+  // WhatsApp's official Click-to-Chat: opens the chat with the message ready.
+  // Must run inside the tap handler (it does) so the browser allows it.
+  window.open(url, "_blank");
+}
+
+/* ---------- Finale ---------- */
+function grandFinale() {
+  document.getElementById("music-btn"); // keep ref alive
+  let t = 0;
+  const rounds = reduceMotion ? 3 : 8;
+  const iv = setInterval(() => {
+    fireCannon(0.1 + Math.random() * 0.8, Math.random() > 0.5 ? 1 : -1);
+    firework(0.2 + Math.random() * 0.6, 0.2 + Math.random() * 0.4);
+    if (++t >= rounds) clearInterval(iv);
+  }, 450);
+  // Immediate big blast + balloons.
+  for (let i = 0; i < 5; i++) firework(0.15 + i * 0.18, 0.25 + Math.random() * 0.3);
+  launchBalloons(reduceMotion ? 6 : 14);
+}
+
+/* ============================================================
+   Particle engine — confetti, poppers, fireworks, balloons.
+   Pure canvas, no libraries, works offline.
+   ============================================================ */
+let ctx, cv, particles = [], balloons = [], rafRunning = false;
+
+function setupCanvas() {
+  cv = document.getElementById("fx");
+  ctx = cv.getContext("2d");
+  resize();
+  window.addEventListener("resize", resize);
+}
+function resize() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = window.innerWidth * dpr;
+  cv.height = window.innerHeight * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+const COLORS = ["#ff5e94","#8b5cf6","#ffd166","#38d9a9","#4dabf7","#ff922b","#f783ac"];
+function rand(a, b) { return a + (b - a) * pseudoRandom(); }
+// Deterministic-free randomness is fine here (not a workflow script).
+function pseudoRandom() { return Math.random(); }
+
+function addParticle(x, y, vx, vy, opts = {}) {
+  particles.push({
+    x, y, vx, vy,
+    size: opts.size || rand(6, 12),
+    color: opts.color || COLORS[(Math.random() * COLORS.length) | 0],
+    rot: rand(0, Math.PI * 2),
+    vr: rand(-0.3, 0.3),
+    gravity: opts.gravity == null ? 0.18 : opts.gravity,
+    drag: opts.drag == null ? 0.995 : opts.drag,
+    life: opts.life || rand(90, 150),
+    age: 0,
+    shape: Math.random() > 0.5 ? "rect" : "circ",
+  });
+  ensureLoop();
+}
+
+// A party-popper cannon shooting up-and-inward from a bottom corner.
+// xFrac: horizontal position (0..1). dir: +1 aims right, -1 aims left.
+function fireCannon(xFrac, dir) {
+  const W = window.innerWidth, H = window.innerHeight;
+  const x = W * xFrac, y = H + 10;
+  const count = reduceMotion ? 24 : 70;
+  for (let i = 0; i < count; i++) {
+    const angle = (-Math.PI / 2) + dir * rand(0.05, 0.6);
+    const speed = rand(9, 18);
+    addParticle(x, y, Math.cos(angle) * speed, Math.sin(angle) * speed, {
+      life: rand(80, 140),
+    });
+  }
+}
+
+// A small confetti puff centered horizontally at (xFrac, yFrac of top area).
+function burst(xFrac, yFrac) {
+  const W = window.innerWidth, H = window.innerHeight;
+  const x = W * xFrac, y = H * (0.25 + yFrac);
+  const count = reduceMotion ? 18 : 40;
+  for (let i = 0; i < count; i++) {
+    const angle = rand(0, Math.PI * 2);
+    const speed = rand(3, 10);
+    addParticle(x, y, Math.cos(angle) * speed, Math.sin(angle) * speed, {
+      gravity: 0.14, life: rand(60, 110),
+    });
+  }
+}
+
+// An expanding firework ring at (xFrac, yFrac).
+function firework(xFrac, yFrac) {
+  const W = window.innerWidth, H = window.innerHeight;
+  const x = W * xFrac, y = H * yFrac;
+  const color = COLORS[(Math.random() * COLORS.length) | 0];
+  const count = reduceMotion ? 24 : 46;
+  for (let i = 0; i < count; i++) {
+    const angle = (Math.PI * 2 * i) / count;
+    const speed = rand(4, 8);
+    addParticle(x, y, Math.cos(angle) * speed, Math.sin(angle) * speed, {
+      color, gravity: 0.06, drag: 0.97, size: rand(4, 7), life: rand(50, 90),
+    });
+  }
+}
+
+function launchBalloons(n) {
+  const W = window.innerWidth, H = window.innerHeight;
+  for (let i = 0; i < n; i++) {
+    balloons.push({
+      x: rand(0.05, 0.95) * W,
+      y: H + rand(20, 300),
+      r: rand(18, 30),
+      color: COLORS[(Math.random() * COLORS.length) | 0],
+      speed: rand(1.1, 2.4),
+      sway: rand(0.5, 1.5),
+      phase: rand(0, Math.PI * 2),
+    });
+  }
+  ensureLoop();
+}
+
+function ensureLoop() {
+  if (!rafRunning) { rafRunning = true; requestAnimationFrame(loop); }
+}
+
+function loop() {
+  ctx.clearRect(0, 0, cv.width, cv.height);
+
+  // Balloons
+  for (let i = balloons.length - 1; i >= 0; i--) {
+    const b = balloons[i];
+    b.y -= b.speed;
+    b.phase += 0.02;
+    const bx = b.x + Math.sin(b.phase) * b.sway * 10;
+    // string
+    ctx.strokeStyle = "rgba(120,90,140,.4)";
+    ctx.beginPath();
+    ctx.moveTo(bx, b.y + b.r);
+    ctx.lineTo(bx, b.y + b.r + 22);
+    ctx.stroke();
+    // body
+    ctx.fillStyle = b.color;
+    ctx.beginPath();
+    ctx.ellipse(bx, b.y, b.r * 0.82, b.r, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // shine
+    ctx.fillStyle = "rgba(255,255,255,.35)";
+    ctx.beginPath();
+    ctx.ellipse(bx - b.r * 0.28, b.y - b.r * 0.32, b.r * 0.18, b.r * 0.28, 0, 0, Math.PI * 2);
+    ctx.fill();
+    if (b.y < -b.r - 30) balloons.splice(i, 1);
+  }
+
+  // Confetti / sparks
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.vx *= p.drag;
+    p.vy = p.vy * p.drag + p.gravity;
+    p.x += p.vx;
+    p.y += p.vy;
+    p.rot += p.vr;
+    p.age++;
+
+    const t = 1 - p.age / p.life;
+    if (t <= 0 || p.y > window.innerHeight + 40) { particles.splice(i, 1); continue; }
+
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, Math.min(1, t + 0.2));
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.fillStyle = p.color;
+    if (p.shape === "rect") {
+      ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+    } else {
+      ctx.beginPath();
+      ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  if (particles.length || balloons.length) {
+    requestAnimationFrame(loop);
+  } else {
+    rafRunning = false;
+  }
+}
+
+/* ---------- Music (optional) ---------- */
+function setupMusic() {
+  if (!CONFIG.music) return;
+  audio = new Audio(CONFIG.photoDir + CONFIG.music);
+  audio.loop = true;
+  audio.volume = 0.6;
+  const btn = document.getElementById("music-btn");
+  btn.style.display = "block";
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (audio.paused) { audio.play(); btn.textContent = "🔊"; }
+    else { audio.pause(); btn.textContent = "🔇"; }
+  });
+}
+function startMusic() {
+  if (audio && audio.paused) {
+    audio.play().catch(() => { /* autoplay may be blocked until a tap; button still works */ });
+  }
+}
+</script>
+</body>
+</html>
