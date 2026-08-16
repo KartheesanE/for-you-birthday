@@ -435,7 +435,7 @@ const CONFIG = {
 
   // OPTIONAL background music. Put a file (e.g. song.mp3) next to this
   // page and write its name here. Leave "" for no music.
-  music: "",
+  music: "song.mp3",
 };
 /* ============================================================
    End of edit zone — the magic below usually needs no changes.
@@ -620,6 +620,12 @@ function showScene(name) {
 function restart() {
   idx = -1;
   resetGifts();
+  // Bring the (faded-out) song back for a replay.
+  if (audio) {
+    audio.volume = 0.6;
+    const btn = document.getElementById("music-btn");
+    if (btn) { btn.style.display = "block"; btn.textContent = "🔊"; }
+  }
   showScene("open");
   fireCannon(0.15, 1);
   fireCannon(0.85, -1);
@@ -706,6 +712,7 @@ function sendChoice(label) {
     status.className = "gift-status";
     status.textContent = "Your gift option has been processed and safely sent to me 💖 ✓";
     document.getElementById("replay").style.display = "inline-block";
+    stopMusic(); // let the song fade out now that the gift is on its way
   };
 
   // Fire WhatsApp (fire-and-forget; can't read response due to CORS, that's fine).
@@ -942,6 +949,21 @@ function startMusic() {
   if (audio && audio.paused) {
     audio.play().catch(() => { /* autoplay may be blocked until a tap; button still works */ });
   }
+}
+// Gently fade the song out, then stop it and hide the mute button.
+function stopMusic() {
+  if (!audio || audio.paused) return;
+  const step = audio.volume / 20;
+  const fade = setInterval(() => {
+    audio.volume = Math.max(0, audio.volume - step);
+    if (audio.volume <= 0.001) {
+      clearInterval(fade);
+      audio.pause();
+      audio.currentTime = 0;
+      const btn = document.getElementById("music-btn");
+      if (btn) btn.style.display = "none";
+    }
+  }, 80);
 }
 </script>
 </body>
